@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>llms.txt / robots.txt / OGPチェッカー | AI観測ラボ</title>
+  <meta name="description" content="URLを入力するだけでllms.txt・robots.txt・OGPタグを一括取得・編集・ダウンロード。AIクローラー対策に。" />
+  <style>
+    :root {
+      --blue: #2563eb;
+      --blue-light: #eff6ff;
+      --blue-dark: #1d4ed8;
+      --gray-50: #f9fafb;
+      --gray-100: #f3f4f6;
+      --gray-200: #e5e7eb;
+      --gray-400: #9ca3af;
+      --gray-600: #4b5563;
+      --gray-800: #1f2937;
+      --green: #16a34a;
+      --green-light: #f0fdf4;
+      --red: #dc2626;
+      --red-light: #fef2f2;
+      --yellow: #d97706;
+      --yellow-light: #fffbeb;
+      --radius: 12px;
+      --shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.06);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+      background: var(--gray-50);
+      color: var(--gray-800);
+      min-height: 100vh;
+    }
+
+    /* ===== HEADER ===== */
+    header {
+      background: #fff;
+      border-bottom: 1px solid var(--gray-200);
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--gray-800);
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--blue);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-icon svg { width: 18px; height: 18px; fill: #fff; }
+
+    .logo-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--gray-800);
+    }
+
+    .logo-sub {
+      font-size: 13px;
+      color: var(--gray-600);
+      margin-left: 4px;
+    }
+
+    .header-cta {
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background .15s;
+    }
+
+    .header-cta:hover { background: var(--blue-dark); }
+
+    /* ===== HERO ===== */
+    .hero {
+      background: #fff;
+      border-bottom: 1px solid var(--gray-200);
+      padding: 48px 24px 40px;
+      text-align: center;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--blue-light);
+      color: var(--blue);
+      border-radius: 100px;
+      padding: 4px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    .badge::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--blue);
+      border-radius: 50%;
+    }
+
+    .hero h1 {
+      font-size: clamp(24px, 4vw, 36px);
+      font-weight: 800;
+      line-height: 1.3;
+      margin-bottom: 12px;
+      color: var(--gray-800);
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      color: var(--blue);
+    }
+
+    .hero p {
+      font-size: 15px;
+      color: var(--gray-600);
+      max-width: 560px;
+      margin: 0 auto 32px;
+      line-height: 1.7;
+    }
+
+    /* ===== SEARCH ===== */
+    .search-wrap {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    .search-box {
+      display: flex;
+      gap: 10px;
+      background: #fff;
+      border: 2px solid var(--gray-200);
+      border-radius: var(--radius);
+      padding: 6px 6px 6px 16px;
+      transition: border-color .15s;
+    }
+
+    .search-box:focus-within {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+    }
+
+    .search-box input {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-size: 15px;
+      color: var(--gray-800);
+      background: transparent;
+    }
+
+    .search-box input::placeholder { color: var(--gray-400); }
+
+    .btn-primary {
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 24px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background .15s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-primary:hover:not(:disabled) { background: var(--blue-dark); }
+    .btn-primary:disabled { opacity: .6; cursor: not-allowed; }
+
+    /* ===== MAIN ===== */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    /* ===== LOADING ===== */
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 48px;
+      color: var(--gray-600);
+    }
+
+    .loading.active { display: block; }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid var(--gray-200);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ===== RESULTS ===== */
+    .results { display: none; }
+    .results.active { display: block; }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .results-grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: #fff;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--gray-100);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      flex: 1;
+    }
+
+    .status-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 100px;
+    }
+
+    .status-found {
+      background: var(--green-light);
+      color: var(--green);
+    }
+
+    .status-missing {
+      background: var(--yellow-light);
+      color: var(--yellow);
+    }
+
+    .status-error {
+      background: var(--red-light);
+      color: var(--red);
+    }
+
+    .card-body { padding: 16px 20px; }
+
+    textarea.file-content {
+      width: 100%;
+      min-height: 220px;
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      padding: 12px;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--gray-800);
+      resize: vertical;
+      outline: none;
+      transition: border-color .15s;
+      background: var(--gray-50);
+    }
+
+    textarea.file-content:focus {
+      border-color: var(--blue);
+      background: #fff;
+    }
+
+    textarea.file-content:disabled {
+      color: var(--gray-400);
+      cursor: not-allowed;
+    }
+
+    .card-footer {
+      padding: 12px 20px;
+      border-top: 1px solid var(--gray-100);
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .btn-dl {
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background .15s;
+    }
+
+    .btn-dl:hover:not(:disabled) { background: var(--blue-dark); }
+    .btn-dl:disabled { opacity: .4; cursor: not-allowed; }
+
+    .btn-copy {
+      background: var(--gray-100);
+      color: var(--gray-600);
+      border: none;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s;
+    }
+
+    .btn-copy:hover { background: var(--gray-200); }
+
+    .edit-hint {
+      font-size: 11px;
+      color: var(--gray-400);
+      margin-left: auto;
+    }
+
+    /* ===== OGP CARD ===== */
+    .ogp-card { grid-column: 1 / -1; }
+
+    .ogp-grid {
+      display: grid;
+      gap: 0;
+    }
+
+    .ogp-row {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      border-bottom: 1px solid var(--gray-100);
+      min-height: 42px;
+    }
+
+    .ogp-row:last-child { border-bottom: none; }
+
+    .ogp-key {
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gray-600);
+      background: var(--gray-50);
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      border-right: 1px solid var(--gray-100);
+      display: flex;
+      align-items: center;
+    }
+
+    .ogp-val {
+      padding: 10px 14px;
+      font-size: 13px;
+      color: var(--gray-800);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      word-break: break-all;
+    }
+
+    .ogp-val a {
+      color: var(--blue);
+      text-decoration: none;
+      font-size: 12px;
+    }
+
+    .ogp-val a:hover { text-decoration: underline; }
+
+    .ogp-val.missing { color: var(--gray-400); font-style: italic; }
+
+    .ogp-preview-img {
+      max-width: 120px;
+      max-height: 64px;
+      border-radius: 6px;
+      border: 1px solid var(--gray-200);
+      object-fit: cover;
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+      text-align: center;
+      padding: 60px 24px;
+      color: var(--gray-400);
+    }
+
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .empty-state h2 {
+      font-size: 18px;
+      color: var(--gray-600);
+      margin-bottom: 8px;
+    }
+
+    .empty-state p { font-size: 14px; }
+
+    /* ===== FOOTER ===== */
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 12px;
+      color: var(--gray-400);
+      border-top: 1px solid var(--gray-200);
+    }
+
+    footer a { color: var(--blue); text-decoration: none; }
+
+    /* ===== TOAST ===== */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--gray-800);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: all .2s;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="https://ai-kansoku.com" class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+    </div>
+    <span class="logo-name">AI観測ラボ</span>
+    <span class="logo-sub">llms / robots / OGP チェッカー</span>
+  </a>
+  <a href="https://ai-kansoku.com" class="header-cta">
+    無料でAI可視性を診断する →
+  </a>
+</header>
+
+<div class="hero">
+  <div class="badge">AI観測ラボ 無料ツール</div>
+  <h1>あなたのサイトの<em>AIクローラー設定</em>を<br>一括チェック・編集・ダウンロード</h1>
+  <p>URLを入力するだけでllms.txt・robots.txt・OGPタグを取得。<br>編集してそのままダウンロード。サーバー不要・登録不要・完全無料。</p>
+
+  <div class="search-wrap">
+    <div class="search-box">
+      <input type="text" id="url-input" placeholder="https://example.com" autocomplete="off" />
+      <button class="btn-primary" id="check-btn" onclick="startCheck()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        チェック
+      </button>
+    </div>
+  </div>
+</div>
+
+<main>
+  <!-- Empty State -->
+  <div class="empty-state" id="empty-state">
+    <div class="empty-icon">🔍</div>
+    <h2>URLを入力してチェック開始</h2>
+    <p>llms.txt・robots.txt・OGPタグを一括で確認できます</p>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p>取得中...</p>
+  </div>
+
+  <!-- Results -->
+  <div class="results" id="results">
+    <div class="results-grid">
+
+      <!-- llms.txt -->
+      <div class="card">
+        <div class="card-header">
+          <span style="font-size:18px;">🤖</span>
+          <span class="card-title">llms.txt</span>
+          <span class="status-badge" id="llms-status">-</span>
+        </div>
+        <div class="card-body">
+          <textarea class="file-content" id="llms-content" placeholder="llms.txtが見つかりませんでした"></textarea>
+        </div>
+        <div class="card-footer">
+          <button class="btn-dl" id="llms-dl" onclick="download('llms-content','llms.txt')" disabled>
+            ⬇ ダウンロード
+          </button>
+          <button class="btn-copy" onclick="copyText('llms-content')">コピー</button>
+          <span class="edit-hint">編集可能</span>
+        </div>
+      </div>
+
+      <!-- robots.txt -->
+      <div class="card">
+        <div class="card-header">
+          <span style="font-size:18px;">🕷</span>
+          <span class="card-title">robots.txt</span>
+          <span class="status-badge" id="robots-status">-</span>
+        </div>
+        <div class="card-body">
+          <textarea class="file-content" id="robots-content" placeholder="robots.txtが見つかりませんでした"></textarea>
+        </div>
+        <div class="card-footer">
+          <button class="btn-dl" id="robots-dl" onclick="download('robots-content','robots.txt')" disabled>
+            ⬇ ダウンロード
+          </button>
+          <button class="btn-copy" onclick="copyText('robots-content')">コピー</button>
+          <span class="edit-hint">編集可能</span>
+        </div>
+      </div>
+
+      <!-- OGP -->
+      <div class="card ogp-card">
+        <div class="card-header">
+          <span style="font-size:18px;">🖼</span>
+          <span class="card-title">OGPタグ</span>
+          <span class="status-badge" id="ogp-status">-</span>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div class="ogp-grid" id="ogp-grid">
+            <div style="padding:24px;text-align:center;color:var(--gray-400);">取得中...</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer>
+  このツールは <a href="https://ai-kansoku.com">AI観測ラボ</a> が提供しています。
+  データはサーバーに保存されません。
+  <br>
+  <a href="https://ai-kansoku.com">AI観測ラボ TOP</a>
+  &nbsp;|&nbsp;
+  <a href="https://image.ai-kansoku.com">画像最適化ツール</a>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const PROXY = '/api/fetch'; // Vercel Edge Function
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2000);
+  }
+
+  function normalizeUrl(input) {
+    let url = input.trim();
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = 'https://' + url;
+    }
+    try {
+      const u = new URL(url);
+      return u.origin;
+    } catch {
+      return null;
+    }
+  }
+
+  async function fetchViaProxy(url) {
+    const res = await fetch(`${PROXY}?url=${encodeURIComponent(url)}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.text();
+  }
+
+  function setStatus(id, type, label) {
+    const el = document.getElementById(id);
+    el.className = 'status-badge status-' + type;
+    el.textContent = label;
+  }
+
+  function download(textareaId, filename) {
+    const text = document.getElementById(textareaId).value;
+    const blob = new Blob([text], { type: 'text/plain' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+  }
+
+  function copyText(textareaId) {
+    const text = document.getElementById(textareaId).value;
+    navigator.clipboard.writeText(text).then(() => showToast('コピーしました！'));
+  }
+
+  function parseOGP(html) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    const metas = doc.querySelectorAll('meta');
+    const tags = {};
+    metas.forEach(m => {
+      const prop = m.getAttribute('property') || m.getAttribute('name');
+      const content = m.getAttribute('content');
+      if (prop && content) tags[prop] = content;
+    });
+    const title = doc.querySelector('title')?.textContent || '';
+    return { tags, title };
+  }
+
+  const OGP_KEYS = [
+    { key: 'og:title', label: 'og:title', type: 'text' },
+    { key: 'og:description', label: 'og:description', type: 'text' },
+    { key: 'og:image', label: 'og:image', type: 'image' },
+    { key: 'og:url', label: 'og:url', type: 'url' },
+    { key: 'og:type', label: 'og:type', type: 'text' },
+    { key: 'og:site_name', label: 'og:site_name', type: 'text' },
+    { key: 'twitter:card', label: 'twitter:card', type: 'text' },
+    { key: 'twitter:title', label: 'twitter:title', type: 'text' },
+    { key: 'twitter:description', label: 'twitter:description', type: 'text' },
+    { key: 'twitter:image', label: 'twitter:image', type: 'image' },
+  ];
+
+  function renderOGP(tags) {
+    const grid = document.getElementById('ogp-grid');
+    let html = '';
+    OGP_KEYS.forEach(({ key, label, type }) => {
+      const val = tags[key];
+      let valHtml = '';
+      if (!val) {
+        valHtml = `<span class="missing">未設定</span>`;
+      } else if (type === 'image') {
+        valHtml = `<img class="ogp-preview-img" src="${val}" alt="" onerror="this.style.display='none'" /><a href="${val}" target="_blank">リンク</a><span style="font-size:11px;color:var(--gray-400);margin-left:4px;">${val.length > 60 ? val.slice(0,60)+'…' : val}</span>`;
+      } else if (type === 'url') {
+        valHtml = `<a href="${val}" target="_blank">${val}</a>`;
+      } else {
+        valHtml = `<span>${val}</span>`;
+      }
+      html += `
+        <div class="ogp-row">
+          <div class="ogp-key">${label}</div>
+          <div class="ogp-val">${valHtml}</div>
+        </div>`;
+    });
+    grid.innerHTML = html;
+  }
+
+  async function startCheck() {
+    const input = document.getElementById('url-input').value;
+    const origin = normalizeUrl(input);
+    if (!origin) {
+      showToast('URLの形式が正しくありません');
+      return;
+    }
+
+    // UI reset
+    document.getElementById('empty-state').style.display = 'none';
+    document.getElementById('results').classList.remove('active');
+    document.getElementById('loading').classList.add('active');
+    document.getElementById('check-btn').disabled = true;
+
+    // Reset fields
+    ['llms', 'robots'].forEach(id => {
+      document.getElementById(`${id}-content`).value = '';
+      document.getElementById(`${id}-dl`).disabled = true;
+      setStatus(`${id}-status`, 'missing', '確認中…');
+    });
+    setStatus('ogp-status', 'missing', '確認中…');
+    document.getElementById('ogp-grid').innerHTML = '<div style="padding:24px;text-align:center;color:var(--gray-400);">取得中...</div>';
+
+    // Fetch all
+    const [llmsResult, robotsResult, htmlResult] = await Promise.allSettled([
+      fetchViaProxy(`${origin}/llms.txt`),
+      fetchViaProxy(`${origin}/robots.txt`),
+      fetchViaProxy(origin),
+    ]);
+
+    document.getElementById('loading').classList.remove('active');
+    document.getElementById('results').classList.add('active');
+    document.getElementById('check-btn').disabled = false;
+
+    // llms.txt
+    if (llmsResult.status === 'fulfilled' && llmsResult.value.trim()) {
+      document.getElementById('llms-content').value = llmsResult.value;
+      document.getElementById('llms-dl').disabled = false;
+      setStatus('llms-status', 'found', '取得済み ✓');
+    } else {
+      document.getElementById('llms-content').value = '';
+      document.getElementById('llms-content').placeholder = 'llms.txtが見つかりませんでした\n\nここに内容を入力してダウンロードできます';
+      document.getElementById('llms-dl').disabled = false; // 空でも書いてDLできる
+      setStatus('llms-status', 'missing', '未設定');
+    }
+
+    // robots.txt
+    if (robotsResult.status === 'fulfilled' && robotsResult.value.trim()) {
+      document.getElementById('robots-content').value = robotsResult.value;
+      document.getElementById('robots-dl').disabled = false;
+      setStatus('robots-status', 'found', '取得済み ✓');
+    } else {
+      document.getElementById('robots-content').value = '';
+      document.getElementById('robots-content').placeholder = 'robots.txtが見つかりませんでした\n\nここに内容を入力してダウンロードできます';
+      document.getElementById('robots-dl').disabled = false;
+      setStatus('robots-status', 'missing', '未設定');
+    }
+
+    // OGP
+    if (htmlResult.status === 'fulfilled') {
+      const { tags } = parseOGP(htmlResult.value);
+      const hasOGP = OGP_KEYS.some(({ key }) => tags[key]);
+      setStatus('ogp-status', hasOGP ? 'found' : 'missing', hasOGP ? '設定済み ✓' : '未設定');
+      renderOGP(tags);
+    } else {
+      setStatus('ogp-status', 'error', '取得エラー');
+      document.getElementById('ogp-grid').innerHTML = '<div style="padding:24px;text-align:center;color:var(--red);">ページの取得に失敗しました</div>';
+    }
+  }
+
+  // Enter キー対応
+  document.getElementById('url-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') startCheck();
+  });
+</script>
+
+</body>
+</html>
